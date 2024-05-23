@@ -1,6 +1,7 @@
 import { check } from 'express-validator'
-import { Restaurant } from '../../models/models.js'
+import { Restaurant, Product } from '../../models/models.js'
 import { checkFileIsImage, checkFileMaxSize } from './FileValidationHelper.js'
+import { and } from 'sequelize'
 
 const maxFileSize = 2000000 // around 2Mb
 
@@ -14,6 +15,16 @@ const checkRestaurantExists = async (value, { req }) => {
     return Promise.reject(new Error(err))
   }
 }
+const checkPromote = async (value, { req }) => {
+  const restaurant = await Restaurant.findByPk(req.body.restaurantId)
+  if (value === true) {
+    if (restaurant.discount === 0) {
+      return false
+    }
+  } else {
+    return true
+  }
+}
 const create = [
   check('name').exists().isString().isLength({ min: 1, max: 255 }).trim(),
   check('description').optional({ checkNull: true, checkFalsy: true }).isString().isLength({ min: 1 }).trim(),
@@ -23,6 +34,7 @@ const create = [
   check('productCategoryId').exists().isInt({ min: 1 }).toInt(),
   check('restaurantId').exists().isInt({ min: 1 }).toInt(),
   check('restaurantId').custom(checkRestaurantExists),
+  check('promote').custom(checkPromote),
   check('image').custom((value, { req }) => {
     return checkFileIsImage(req, 'image')
   }).withMessage('Please upload an image with format (jpeg, png).'),
@@ -39,6 +51,7 @@ const update = [
   check('availability').optional().isBoolean().toBoolean(),
   check('productCategoryId').exists().isInt({ min: 1 }).toInt(),
   check('restaurantId').not().exists(),
+  check('promote').exists().isBoolean().trim().custom(checkPromote),
   check('image').custom((value, { req }) => {
     return checkFileIsImage(req, 'image')
   }).withMessage('Please upload an image with format (jpeg, png).'),

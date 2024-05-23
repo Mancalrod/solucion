@@ -11,6 +11,11 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
+      discounted: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
+
       description: {
         type: Sequelize.TEXT
       },

@@ -16,8 +16,12 @@ function update (id, data) {
   return put(`products/${id}`, data)
 }
 
+function promote (id, data) {
+  return put(`products/${id}/promote`, data)
+}
+
 function remove (id) {
   return destroy(`products/${id}`)
 }
 
-export { getDetail, getProductCategories, create, update, remove }
+export { getDetail, getProductCategories, create, update, remove, promote }

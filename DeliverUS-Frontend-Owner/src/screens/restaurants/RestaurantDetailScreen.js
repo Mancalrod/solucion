@@ -4,7 +4,7 @@ import { StyleSheet, View, FlatList, ImageBackground, Image, Pressable } from 'r
 import { showMessage } from 'react-native-flash-message'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { getDetail } from '../../api/RestaurantEndpoints'
-import { remove } from '../../api/ProductEndpoints'
+import { remove, promote, getDetails } from '../../api/ProductEndpoints'
 import ImageCard from '../../components/ImageCard'
 import TextRegular from '../../components/TextRegular'
 import TextSemiBold from '../../components/TextSemibold'
@@ -15,10 +15,14 @@ import defaultProductImage from '../../../assets/product.jpeg'
 export default function RestaurantDetailScreen ({ navigation, route }) {
   const [restaurant, setRestaurant] = useState({})
   const [productToBeDeleted, setProductToBeDeleted] = useState(null)
+  const [productId, setProductId] = useState(null)
 
   useEffect(() => {
     fetchRestaurantDetail()
   }, [route])
+  useEffect(() => {
+    promo()
+  }, [productId])
 
   const renderHeader = () => {
     return (
@@ -95,6 +99,16 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
               },
               styles.actionButton
             ]}>
+         <Pressable
+            onPress={() => { setProductId(item.id) }}
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed
+                  ? GlobalStyles.brandPrimaryTap
+                  : GlobalStyles.brandPrimary
+              },
+              styles.actionButton
+            ]}></Pressable>
           <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
             <MaterialCommunityIcons name='delete' color={'white'} size={20}/>
             <TextRegular textStyle={styles.text}>
@@ -113,6 +127,18 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
         This restaurant has no products yet.
       </TextRegular>
     )
+  }
+  const promo = async () => {
+    try {
+      const fetchedProduct = await getDetails(productId)
+      const nDatos = {}
+      nDatos.name = fetchedProduct.name
+      nDatos.price = fetchedProduct.price
+      nDatos.productCategoryId = fetchedProduct.productCategoryId
+      await promote(productId, nDatos)
+    } catch (err) {
+
+    }
   }
 
   const fetchRestaurantDetail = async () => {
